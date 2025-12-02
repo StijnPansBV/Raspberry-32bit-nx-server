@@ -9,10 +9,10 @@ Dit project bevat een installatie-script voor het automatisch configureren van e
 
 ## 📦 Installatie
 
-Clone deze repository en voer het setup-script uit:
+Raspberry Pi 32bit (geen client)
+Automatisch script installeren NX Witness en auto update en hulptools:
+1.	git clone https://github.com/StijnPansBV/Raspberry-32bit-nx-server.git
+2.	cd Raspberry-32bit-nx-server/
+3.	chmod +x setup.sh
+4.	./setup.sh
 
-```bash
-git clone https://github.com/StijnPansBV/Raspberry-32bit-nx-server.git
-cd Raspberry-32bit-nx-server
-chmod +x setup.sh
-./setup.sh
