@@ -1,113 +1,108 @@
+Automatische Installatie & Watchdog Setup
+Dit project bevat een Bash-installatiescript dat een Linux-systeem configureert voor:
 
-Raspberry Pi 32-bit Nx Witness Server (Bookworm)
-Dit project bevat een volledig automatisch installatie- en update-script voor het opzetten van een Nx Witness mediaserver op een Raspberry Pi 4 met Raspberry Pi OS (Bookworm).
-✅ Functies
-
-Automatische installatie van:
-
-Nx Witness server
-Nuttige tools (SSH, Cockpit, bpytop, unattended-upgrades, neofetch, figlet, enz.)
+Basisinstallatie van nuttige pakketten
+Installatie van Nx Witness Server
+Configuratie van een welkomstbanner
+Automatische disk-mounting met UUID + LABEL
+Watchdog-services voor schijven en Nx Witness
+Systemd-timers voor periodieke controles
 
 
-Tijdzone instellen op Europe/Brussels
+Inhoud
+
+Benodigdheden
+Installatie
+Functionaliteiten
+Watchdog-scripts
+Systemd-services
+Troubleshooting Tips
+Credits
+
+
+Benodigdheden
+
+Linux distributie met apt (bijv. Ubuntu/Debian)
+Internetverbinding
+Rootrechten (sudo)
+
+Installatie
+Voer het script uit:
+
+chmod +x install.sh
+./install.sh
+
+Het script doet het volgende:
+
+Update en upgrade van het systeem
+Installeert pakketten: openssh-server, cockpit, bpytop, unattended-upgrades, neofetch, figlet, wget, curl, parted, e2fsprogs
+Configureert unattended-upgrades
+Download en installeert Nx Witness Server (vaste versie)
+Stelt een welkomstbanner in met systeeminfo
+Voegt neofetch toe aan .bashrc
+
+Functionaliteiten
+
+
 Disk Watchdog:
 
-Automatisch mounten van extra schijven met UUID + LABEL
-Reboot als geen enkele schijf gemount is (max 1x per uur)
+Detecteert extra schijven (excl. OS-schijf)
+Maakt partities en labels aan indien nodig
+Mount schijven automatisch via UUID
+Herstart systeem als geen enkele schijf gemount is (max 1x per uur)
+
 
 
 NX Watchdog:
 
-Controleert of Nx Witness draait en herstart indien nodig
-
-
-Systemd timers voor beide watchdogs (elke 30 seconden)
-Auto-update mechanisme via GitHub:
-
-Controleert elke 15 minuten op nieuwe versie
-Voert update uit indien nodig
-
-
-Volledig non-interactief:
-
-Geen manuele input nodig
-Script verwijdert zichzelf na installatie
-Automatische reboot na installatie
+Controleert of Nx Witness draait
+Herstart service indien nodig
 
 
 
 
-📂 Bestanden
+Watchdog Scripts
 
-setup.sh
-Het hoofdscript voor installatie en configuratie.
-update.sh
-Wordt automatisch aangemaakt door setup.sh en zorgt voor periodieke updates.
+/usr/local/bin/disk-watchdog.sh
+/usr/local/bin/nx-watchdog.sh
+
+Beide scripts loggen naar /var/log/.
+
+Systemd Services
 
 
-🔧 Installatie-instructies
+Disk Watchdog:
 
-Download en voer het script uit:
-Shellgit clone https://github.com/StijnPansBV/Raspberry-32bit-nx-server-bookworm.gitcd Raspberry-32bit-nx-server-bookwormchmod +x setup.shsudo ./setup.shMeer regels weergeven
-
-Het script:
-
-Installeert alle vereisten
-Configureert Nx Witness
-Zet watchdogs en timers op
-Maakt auto-update service en timer
-Verwijdert zichzelf
-Herstart het systeem
+Service: /etc/systemd/system/disk-watchdog.service
+Timer: /etc/systemd/system/disk-watchdog.timer (elke 30 sec)
 
 
 
+NX Watchdog:
 
-🔄 Automatische updates
-
-update.sh wordt aangemaakt in /opt/update.sh.
-Systemd timer (github-update.timer) draait elke 15 minuten:
-
-Controleert GitHub repo op nieuwe commits
-Voert setup.sh opnieuw uit bij verschil
-
-
-Logbestand: /var/log/update.log
-
-
-🛠 Handige commando’s
-
-Update-log bekijken:
-Shellcat /var/log/update.logMeer regels weergeven
-
-Timerstatus controleren:
-Shellsystemctl status github-update.timerMeer regels weergeven
-
-Watchdog timers controleren:
-Shellsystemctl status disk-watchdog.timersystemctl status nx-watchdog.timerMeer regels weergeven
+Service: /etc/systemd/system/nx-watchdog.service
+Timer: /etc/systemd/system/nx-watchdog.timer (elke 30 sec)
 
 
 
-✅ Versiebeheer
+Timers worden automatisch geactiveerd.
 
-Het script gebruikt een versievariabele:
-ShellVERSION="x.x.x"Meer regels weergeven
+Troubleshooting Tips
+1. fstab fouten of schijven niet gemount
 
-Bij elke update wordt deze vergeleken met /var/log/install-version.
-Nieuwe versie → volledige herinstallatie.
+Controleer /var/log/disk-watchdog.log voor details.
+Voer handmatig uit:
+sudo mount -a
+
+sudo systemctl restart disk-watchdog.timer
+
+systemctl status networkoptix-mediaserver.service
+
+sudo systemctl restart networkoptix-mediaserver.service
+
+tail -f /var/log/nx-watchdog.log
+
+systemctl list-timers
 
 
-⚠️ Belangrijk
-
-Zorg dat Raspberry Pi OS (Bookworm) geïnstalleerd is.
-Script is getest op Raspberry Pi 4.
-Nx Witness versie: 6.0.6.41837 (ARM32).
-
-
-Wil je dat ik ook een sectie toevoeg over hoe je de interval (15 minuten) kunt aanpassen naar een andere tijd in de README?
-Of een extra sectie over hoe je handmatig een update kunt forceren?
-Geef uw feedback over BizChat
-
-Dit toestel en software wordt beheerd door de firma Stijn Pans BV.
-Voor ondersteuning kan je ons bereiken via:
-• 	📧 support@stijn-pans.be
-• 	☎️ 016 77 08 0
+sudo apt install -f -y
